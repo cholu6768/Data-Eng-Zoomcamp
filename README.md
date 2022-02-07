@@ -315,6 +315,38 @@ LIMIT 20;
 
 <details>
 
-Coming soon..	
+## Question 1: Start date for the Yellow taxi data
+
+**What should be the start date for this dag?**
+
+The start date should be 2019-01-01 since we want to retrieve the yellow taxi data starting from january of 2019.
+
+## Question 2: Frequency for the Yellow taxi data
+
+**How often do we need to run this DAG?**
+
+We need to run the DAG every month, since we need to retrive the taxi yellow data from every month.
+
+![airflow task yellow taxi](week_2_dags/airflow_task_yellow_taxi.jpg)
+
+### Link for the DAG script that ingests the yellow taxi data: [Click here](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_2_dags/data_ingestion_gcs_dag_yellow_taxi.py)
+
+## Question 3: DAG for FHV Data
+
+**How many DAG runs are green for data in 2019 after finishing everything?**
+
+There were 12 DAG runs once everything was done.
+
+!["airflow task"](week_2_dags/airflow_task_fhv.jpg)
+
+### Link for the DAG script that ingests the For Hire Vehicles data: [Click here](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_2_dags/data_ingestion_gcs_dag_fhv.py)
+
+## Question 4: DAG for Zones
+
+**How often does it need to run?**
+
+The DAG should only be ran once since there is only one file for the taxi zones.
+
+### Link for the DAG script that ingests the taxi zone data: [Click here](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_2_dags/data_ingestion_gcs_dag_taxi_zone.py)
 	
 </details>	
