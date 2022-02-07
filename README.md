@@ -327,7 +327,7 @@ The start date should be 2019-01-01 since we want to retrieve the yellow taxi da
 
 We need to run the DAG every month, since we need to retrive the taxi yellow data from every month.
 
-![airflow task yellow taxi](week_2_dags/airflow_task_yellow_taxi.jpg)
+![airflow task](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_2_dags/airflow_task_yellow_taxi.JPG)
 
 ### Link for the DAG script that ingests the yellow taxi data: [Click here](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_2_dags/data_ingestion_gcs_dag_yellow_taxi.py)
 
@@ -337,7 +337,7 @@ We need to run the DAG every month, since we need to retrive the taxi yellow dat
 
 There were 12 DAG runs once everything was done.
 
-!["airflow task"](week_2_dags/airflow_task_fhv.jpg)
+!["airflow task"](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_2_dags/airflow_task_fhv.JPG)
 
 ### Link for the DAG script that ingests the For Hire Vehicles data: [Click here](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_2_dags/data_ingestion_gcs_dag_fhv.py)
 
