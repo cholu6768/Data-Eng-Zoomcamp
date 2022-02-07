@@ -2,7 +2,7 @@
 Assigments for the Data Engineering Zoomcamp
 
 # Homework Questions Week 1
-
+<details>
 ## Question 3. Count records
 
 **How many taxi trips were there on January 15?
@@ -309,3 +309,4 @@ LIMIT 20;
 | "Eltingville/Annadale/Prince's Bay / Co-Op City"  | 144.75             |
 
 **The pickup-dropoff pair with the largest average price for a ride is Alphabet City / Unknown.**
+</details>
