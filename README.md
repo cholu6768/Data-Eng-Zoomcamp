@@ -30,8 +30,6 @@ WHERE
 
 **Use the pick up time for your calculations.**
 
-**(note: it's not a typo, it's "tip", not "trip")**
-
 ```sql
 SELECT
 	DATE(tpep_pickup_datetime),
