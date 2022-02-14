@@ -350,3 +350,133 @@ The DAG should only be ran once since there is only one file for the taxi zones.
 ### Link for the DAG script that ingests the taxi zone data: [Click here](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_2_dags/data_ingestion_gcs_dag_taxi_zone.py)
 	
 </details>	
+
+# Homework Questions Week 3
+
+<details>
+
+## Question 1: What is count for fhv vehicles data for year 2019?
+
+First, I created a table that had all the data from for-hire-vehicles of 2019
+
+```sql
+CREATE OR REPLACE EXTERNAL TABLE `mythic-evening-339419.trips_data_all.external_fhv_tripdata`
+OPTIONS (
+  format = 'PARQUET',
+  uris = ['gs://dtc_data_lake_mythic-evening-339419/raw/fhv_tripdata_2019-*.parquet']
+);
+```
+
+After that, I counted all the rows from the new table called external_fhv_tripdata
+
+```sql
+SELECT
+    COUNT(pickup_datetime) AS num_rows
+FROM mythic-evening-339419.trips_data_all.external_fhv_tripdata 
+```
+There are 42,084,899 rows for fhv vehicles data for the year 2019.
+
+| num_rows |
+|----------|
+| 42084899 |
+
+## Question 2: How many distinct dispatching_base_num do we have in fhv for 2019?
+
+To know how many unique dispatching_base_num there were, I counted all the ```DISTINCT``` values of dispatching_base_num.
+
+```sql
+SELECT
+    COUNT(DISTINCT dispatching_base_num) AS frequency
+FROM mythic-evening-339419.trips_data_all.external_fhv_tripdata 
+```
+There were a total of 792 dispatching_base_num.
+
+| frequency |
+|-----------|
+| 792       |
+
+## Question 3: Best strategy to optimise, if query always filter by dropoff_datetime and order by dispatching_base_num
+
+The best way to optimize the query would be by creating a new table with the same data but by doing a partition by the pickup_datetime and then doing a cluster by dispatching_base_num.
+
+```sql
+CREATE OR REPLACE TABLE mythic-evening-339419.trips_data_all.fhv_tripdata_partitoned_clustered
+PARTITION BY DATE(pickup_datetime)
+CLUSTER BY dispatching_base_num AS
+SELECT * FROM mythic-evening-339419.trips_data_all.external_fhv_tripdata;
+```
+
+Let's try it out and compare with the table that is not partioned nor clustered.
+
+```sql
+SELECT
+    COUNT(*) AS trips
+FROM mythic-evening-339419.trips_data_all.external_fhv_tripdata 
+WHERE 
+    DATE(pickup_datetime) BETWEEN '2019-01-01' AND '2019-08-20'
+    AND dispatching_base_num='B00009';
+```
+
+This is the information I got from processing this query: Query complete (9.5 sec elapsed, 547.5 MB processed)
+
+Now, let's see for the table that has a partition and is clustered.
+
+```sql
+SELECT 
+    COUNT(*) as trips
+FROM mythic-evening-339419.trips_data_all.fhv_tripdata_partitoned_clustered
+WHERE 
+    DATE(pickup_datetime) BETWEEN '2019-01-01' AND '2019-08-20'
+    AND dispatching_base_num='B00009';
+```
+This is the information I got from processing this query: Query complete (0.4 sec elapsed, 249.2 MB processed)
+
+**We can see that the by doing the partition by pickup_datetime and clustering by dispatching_base_num, does help the processing time and less data gets processed which means less costs.**
+
+## Question 4: What is the count, estimated and actual data processed for query which counts trip between 2019/01/01 and 2019/03/31 for dispatching_base_num B00987, B02060, B02279
+
+First, I created the query with the requirements. 
+
+For some reason, I could not get the estimated processed data for any of the queries. It is always loading and it never tells me the estimated processed data.
+
+```sql
+SELECT 
+    COUNT(*) as trips
+FROM mythic-evening-339419.trips_data_all.fhv_tripdata_partitoned_clustered
+WHERE 
+    DATE(pickup_datetime) BETWEEN '2019-01-01' AND '2019-03-31'
+    AND dispatching_base_num IN ('B00987', 'B02279', 'B02060');
+```
+| trips |
+|-------|
+| 26647 |
+
+Information I got from processing this query: Query complete (0.3 sec elapsed, 161.1 MB processed)
+
+My answer did not match with the ones from the homework so I decided to choose the closest one which was: 
+
+**Count: 26558, Estimated data processed: 400MB, Actual data processed: 155MB**
+
+## Question 5: What will be the best partitioning or clustering strategy when filtering on dispatching_base_num and SR_Flag
+
+Clustering by dispatching_base_num and SR_Flag was the best option. 
+
+Partitioning can't be done on any of the two columns because dispatching_base_num is a ```STRING``` column and SR_Flag is an ```INTEGER``` column but with lots of ```NULL``` values.
+
+```sql
+CREATE OR REPLACE TABLE mythic-evening-339419.trips_data_all.fhv_tripdata_clustered
+CLUSTER BY dispatching_base_num, SR_Flag AS
+SELECT * FROM mythic-evening-339419.trips_data_all.external_fhv_tripdata;
+```
+
+## Question 6: What improvements can be seen by partitioning and clustering for data size less than 1 GB
+
+There are no improvements because partitioning and clustering would creata extra metadata which as a result incur metadata reads and metadata maintenance. This would create extra costs.
+
+## Question 7: In which format does BigQuery save data
+
+BigQuery saves data in a columnar format. 
+
+This format is used because when doing queries it will only read the selected columns and not the parent columns. This will give a performance improvement.
+
+</details>
