@@ -509,7 +509,7 @@ At the end my answer was not among the ones provided in the options but I chose 
 
 After doing the pie chart, the distribution was 89.8% for the yellow trip data and 10.2% for the green trip data.
 
-![pie chart](yellow_green_distribution.jpg)
+![pie chart](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/yellow_green_distribution.JPG)
 
 ## Question 3: What is the count of records in the model stg_fhv_tripdata after running all models with the test run variable disabled (:false)
 
@@ -547,7 +547,7 @@ Once again, i got an answer from the ones in the available options. The answer w
 
 As seen in the graph the month with the most trips by far was january.
 
-![graph](fhv_trips_month.jpg)
+![graph](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/fhv_trips_month.JPG)
 
 
 </details>
