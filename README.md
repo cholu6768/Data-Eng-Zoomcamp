@@ -480,3 +480,74 @@ BigQuery saves data in a columnar format.
 This format is used because when doing queries it will only read the selected columns and not the parent columns. This will give a performance improvement.
 
 </details>
+
+# Homework Questions Week 4
+
+<details>
+
+To answers these questions I created dbt models which are in another [repository](https://github.com/cholu6768/Data-Engineering-dbt-week-4). The reason was so that I kept this repository cleaner. 
+
+## Question 1: What is the count of records in the model fact_trips after running all models with the test run variable disabled and filtering for 2019 and 2020 data only (pickup datetime)?
+
+I counted all the rows and filtered the data between the years of 2019 and 2020.
+
+```sql
+SELECT 
+    COUNT(*) AS frequency
+FROM `mythic-evening-339419.dbt_fernando_chavez.fact_trips` 
+WHERE 
+    DATE(pickup_datetime) <= '2020-12-31' AND
+    DATE(pickup_datetime) >= '2019-01-01'
+```
+At the end my answer was not among the ones provided in the options but I chose the closest one which was 61,635,151.
+
+| frequency |
+|-----------|
+| 61451452  |
+
+## Question 2: What is the distribution between service type filtering by years 2019 and 2020 data ? as done in the videos
+
+After doing the pie chart, the distribution was 89.8% for the yellow trip data and 10.2% for the green trip data.
+
+![pie chart](yellow_green_distribution.jpg)
+
+## Question 3: What is the count of records in the model stg_fhv_tripdata after running all models with the test run variable disabled (:false)
+
+After creating the staging model, I filtered the data from 2019 and ran the query.
+
+```sql
+SELECT 
+    COUNT(*) AS frequency
+FROM `mythic-evening-339419`.`trips_data_all`.`fhv_tripdata`
+WHERE 
+    EXTRACT(YEAR FROM pickup_datetime) IN (2019)
+```	
+At the end I got on the of the answers from the options shown. The answer was 42,084,899 which is the number of rows or records in that table when the pickup date was in the year of 2019.
+
+| frequency |
+|-----------|
+| 42084899  |
+
+## Question 4: What is the count of records in the model fact_fhv_trips after running all dependencies with the test run variable disabled (:false)?
+
+Once I created the core model, i counted all the rows in the table. As my core model table already filtered the record for only 2019, i did not need to filter it again.
+
+```sql
+SELECT 
+    COUNT(*) AS frequency
+FROM `mythic-evening-339419.dbt_fernando_chavez.fact_fhv_trips` 
+```
+Once again, i got an answer from the ones in the available options. The answer was 22,676,253 records or rows in the year of 2019.
+
+| frequency |
+|-----------|
+| 22676253  |
+
+## Question 5: What is the month with the biggest amount of rides after building a tile for the fact_fhv_trips table?
+
+As seen in the graph the month with the most trips by far was january.
+
+![graph](fhv_trips_month.jpg)
+
+
+</details>
