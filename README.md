@@ -551,3 +551,270 @@ As seen in the graph the month with the most trips by far was january.
 
 
 </details>
+
+# Homework Questions Week 5
+<details>
+
+## Question 1: Install Spark and PySpark
+
+- **Install Spark**
+- **Run PySpark**
+- **Create a local spark session**
+- **Execute spark.version**
+
+```python
+# Import libraries to run Pyspark
+import pyspark
+from pyspark.sql import SparkSession
+
+# Create a local spark session
+spark = SparkSession.builder \
+    .master("local[*]") \
+    .appName('test') \
+    .getOrCreate()
+
+print(spark.version)
+```
+
+## What's the output?
+
+OUTPUT:
+```python
+3.0.3
+```
+
+## Question 2. HVFHW February 2021
+
+- **Download the HVFHV data for february 2021**
+
+- **Read it with Spark using the same schema as we did in the lessons. We will use this dataset for all the remaining questions.**
+
+- **Repartition it to 24 partitions and save it to parquet.**
+
+## What's the size of the folder with results (in MB)?
+
+First, I downloaded the dataset using bash.
+
+```bash
+!wget https://nyc-tlc.s3.amazonaws.com/trip+data/fhvhv_tripdata_2021-02.csv
+```
+Afterwards, I read the CSV file with spark.
+```python
+df_fhv = spark.read \
+    .option("header","true") \
+    .csv("fhvhv_tripdata_2021-02.csv")
+```
+Next, I read the CSV file with Pandas and output the data types of each column.
+
+```python
+df_fhv_pandas = pd.read_csv("fhvhv_tripdata_2021-02.csv")
+
+print(df_fhv_pandas.dtypes)
+```
+Afterwards, I created a dataframe with spark using the pandas dataframe and output the schema of the new spark dataframe. I did this so that I could compare the schema from the spark dataframe and the pandas dataframe.
+
+```python
+print(spark.createDataFrame(df_fhv_pandas).schema)
+```
+
+Since the pandas dataframe was more accurate, I modified the spark dataframe schema so that it had the same datatypes from the pandas dataframe and created a mock schema.
+
+```python
+schema = types.StructType([
+    types.StructField("hvfhs_license_num",types.StringType(),True),
+    types.StructField("dispatching_base_num",types.StringType(),True),
+    types.StructField("pickup_datetime",types.TimestampType(),True),
+    types.StructField("dropoff_datetime",types.TimestampType(),True),
+    types.StructField("PULocationID",types.IntegerType(),True),
+    types.StructField("DOLocationID",types.IntegerType(),True),
+    types.StructField("SR_Flag",types.StringType(),True)
+]) 
+```
+The next step was to read the CSV file with spark again but now with the schema I previously made.
+
+```python
+df_fhv = spark.read \
+    .option("header","true") \
+    .schema(schema) \
+    .csv("fhvhv_tripdata_2021-02.csv")
+```
+After, I repartition the file in 24 parts.
+```python
+df_fhv.repartition(24)
+```
+At the end I converted the 24 partition files into parquet files and saved them.
+```python 
+df_fhv.write.parquet("fhvhv/2021/02")
+```
+To check total size of the parquet files I went to the respective folder ("fhvhv/2021/02") using bash. Next, I checked the size of the parquet files using the command ```ls -lh``` and the total size of all the parquet files was ```147M```. My Answer was not among the possible options but I selected the closest one which was 158MB
+
+## Question 3. Count records, How many taxi trips were there on February 15?
+
+- **Consider only trips that started on February 15.**
+
+First, I opened all the parquet partition files.
+
+```python
+df_hfhv = spark.read.parquet('fhvhv/2021/02/*')
+```
+
+Next, I created temporal table from the data of the parquet file so that I could do SQL queries on the data.
+
+```python
+df_hfhv.registerTempTable('hfhv_trips_data')
+```
+Afterwards, I used a SQL to query to answer the question.
+
+```python
+df_result = spark.sql("""
+SELECT 
+    COUNT(pickup_datetime) AS frequency
+FROM hfhv_trips_data
+WHERE 
+    pickup_datetime >= '2021-02-15 00:00:00' AND
+    pickup_datetime < '2021-02-16 00:00:00'
+""").show()
+```
+My output:
+
+|frequency|
+-----------
+|   367170|
+
+**There were 367,170 trips in February of 2021.**
+
+## Question 4. Longest trip for each day
+
+- **Now calculate the duration for each trip.**
+
+## Which day had the longest trip?
+
+Using the infrastructure from the previous question I just did another SQL query to answer the question. 
+
+I calculated the difference of hours between each dropoff and pickup datetime.
+
+```python
+df_result = spark.sql("""
+SELECT 
+    pickup_datetime,
+    dropoff_datetime,
+    EXTRACT(HOUR FROM dropoff_datetime - pickup_datetime) AS HourDifference
+FROM hfhv_trips_data
+ORDER BY HourDifference DESC
+LIMIT 5
+""").show()
+```
+My output:
+
+| pickup_datetime     | dropoff_datetime    | HourDifference |
+|---------------------|---------------------|----------------|
+| 2021-02-11 13:40:44 | 2021-02-12 10:39:44 | 20             |
+| 2021-02-17 15:54:53 | 2021-02-18 07:48:34 | 15             |
+| 2021-02-20 12:08:15 | 2021-02-21 00:22:14 | 12             |
+| 2021-02-03 20:24:25 | 2021-02-04 07:41:58 | 11             |
+| 2021-02-19 23:17:44 | 2021-02-20 09:44:01 | 10             |
+
+**The day with the longest trip was the 11th of February.**
+
+## Question 5. Most frequent dispatching_base_num
+
+- **Now find the most frequently occurring dispatching_base_num in this dataset.**
+
+## How many stages does the spark job has?
+
+Using the same infrastructure from question 3. I wrote a SQL query to find out the most frequent ```dispatching_base_num```. 
+
+```python
+df_result = spark.sql("""
+SELECT 
+    dispatching_base_num,
+    COUNT(dispatching_base_num) AS frequency
+FROM hfhv_trips_data
+GROUP BY dispatching_base_num
+ORDER BY frequency DESC
+LIMIT 5
+""").show()
+```
+My output:
+
+| dispatching_base_num | frequency |
+|----------------------|-----------|
+| B02510               | 3233664   |
+| B02764               | 965568    |
+| B02872               | 882689    |
+| B02875               | 685390    |
+| B02765               | 559768    |
+
+**The most frequent ``dispatching_base_num`` was B02510.**
+
+**Additionally, the spark job had 3 stages.**
+
+## Question 6. Most common locations pair
+
+**- Find the most common pickup-dropoff pair.**
+
+**For example:**
+
+**"Jamaica Bay / Clinton East"**
+
+- **Enter two zone names separated by a slash**
+
+- **If any of the zone names are unknown (missing), use "Unknown". For example, "Unknown / Clinton East"**
+
+I used the same infrastructure from question 3 plus the data from the taxi zones.
+
+I turned the data from the taxi zones into a temporal table so that I can use SQL queries on it.
+
+```python
+df_zones = spark.read.parquet('zones/*')
+
+df_zones.registerTempTable('taxi_zone')
+```
+After that, to be able to know the answer to the question. I had to do 2 left joins between ``hfhv_trips_data`` and the ``taxi_zone`` so that I could obtain the names from the pickup and dropoff zone IDs.
+
+The CONCAT function allowed me to put the pickup and the dropoff zone names in one single column. 
+
+The COALESCE function helped me rename the NULL values to Unknown.
+
+```python
+df_result = spark.sql("""
+SELECT
+    CONCAT(
+        COALESCE(pickup_zone.zone, 'Unknown'),
+        ' / ',
+        COALESCE(dropoff_zone.zone, 'Unknown')
+    ) AS location_pair,
+    COUNT(pickup_zone.zone) AS frequency
+FROM hfhv_trips_data
+LEFT JOIN taxi_zone AS pickup_zone
+    ON hfhv_trips_data.pulocationid = pickup_zone.locationid 
+LEFT JOIN taxi_zone AS dropoff_zone
+    ON hfhv_trips_data.dolocationid = dropoff_zone.locationid
+GROUP BY
+    pickup_zone.zone,
+    dropoff_zone.zone
+ORDER BY frequency DESC
+LIMIT 10
+""").show()
+```
+My output:
+
+| location_pair                               | frequency |
+|---------------------------------------------|-----------|
+| East New York / East New York               | 45041     |
+| Borough Park / Borough Park                 | 37329     |
+| Canarsie / Canarsie                         | 28026     |
+| Crown Heights North / Crown Heights North   | 25976     |
+| Bay Ridge / Bay Ridge                       | 17934     |
+| Jackson Heights / Jackson Heights           | 14688     |
+| Astoria / Astoria                           | 14688     |
+| Central Harlem North / Central Harlem North | 14481     |
+| Bushwick South / Bushwick South             | 14424     |
+| Flatbush/Ditmas Park / Flatbush/Ditmas Park | 13976     |
+
+**The most common pickup-dropoff pair was East New York / East New York with a frequency of 45,041 times.**
+
+**Additionally, the spark job performed 3 stages.**
+
+
+</details>
