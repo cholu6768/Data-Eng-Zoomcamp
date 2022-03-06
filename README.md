@@ -678,7 +678,7 @@ WHERE
 My output:
 
 |frequency|
------------
+|---------|
 |   367170|
 
 **There were 367,170 trips in February of 2021.**
@@ -749,6 +749,8 @@ My output:
 
 **Additionally, the spark job had 3 stages.**
 
+![spark job](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_5_images/question_5_spark_stages.JPG)	
+
 ## Question 6. Most common locations pair
 
 **- Find the most common pickup-dropoff pair.**
@@ -816,5 +818,6 @@ My output:
 
 **Additionally, the spark job performed 3 stages.**
 
+![spark job](https://github.com/cholu6768/Data-Eng-Zoomcamp/blob/main/week_5_images/question_6_spark_stages.JPG)	
 
 </details>
